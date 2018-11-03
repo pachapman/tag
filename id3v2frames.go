@@ -452,6 +452,10 @@ func (t Comm) String() string {
 // Description         <text string according to encoding> $00 (00)
 // Value               <text string according to encoding>
 func readTextWithDescrFrame(b []byte, hasLang bool, encoded bool) (*Comm, error) {
+	// We must have encoding (1 byte), language (3 bytes) and at least 1 byte of actual description
+	if len(b) < 5 {
+		return nil, errors.New("error decoding tag description text: invalid encoding")
+	}
 	enc := b[0]
 	b = b[1:]
 
@@ -462,9 +466,6 @@ func readTextWithDescrFrame(b []byte, hasLang bool, encoded bool) (*Comm, error)
 	}
 
 	descTextSplit := dataSplit(b, enc)
-	if len(descTextSplit) < 1 {
-		return nil, fmt.Errorf("error decoding tag description text: invalid encoding")
-	}
 
 	desc, err := decodeText(enc, descTextSplit[0])
 	if err != nil {
